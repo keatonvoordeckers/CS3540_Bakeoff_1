@@ -7,6 +7,8 @@ import java.awt.Robot;
 import java.util.ArrayList;
 import java.util.Collections;
 import processing.core.PApplet;
+import java.awt.Component;
+import java.awt.Point;
 
 public class BakeOff1 extends PApplet {
 	// when in doubt, consult the Processsing reference:
@@ -28,6 +30,8 @@ public class BakeOff1 extends PApplet {
 	int hits = 0; // number of successful clicks
 	int misses = 0; // number of missed clicks
 	Robot robot; // initialized in setup
+	Component canvas; // initialized in setup
+	Point position; // initialized in setup
 	boolean missed = false;
 
 	int numRepeats = 1; // sets the number of times each button repeats in the test
@@ -43,7 +47,7 @@ public class BakeOff1 extends PApplet {
 	 * // https://processing.org/reference/setup_.html
 	 */
 	public void setup() {
-		// noCursor(); // hides the system cursor if you want
+		noCursor(); // hides the system cursor if you want
 		noStroke(); // turn off all strokes, we're just using fills here (can change this if you
 					// want)
 		textFont(createFont("Arial", 16)); // sets the font to Arial size 16
@@ -75,11 +79,9 @@ public class BakeOff1 extends PApplet {
 		buttonColors.add(Color.ORANGE);
 		buttonColors.add(Color.YELLOW);
 			
-		
-				
 		Collections.shuffle(trials); // randomize the order of the buttons
 		System.out.println("trial order: " + trials); // print out order for reference
-
+		
 		surface.setLocation(0, 0);// put window in top left corner of screen (doesn't always work)
 	}
 
@@ -112,8 +114,10 @@ public class BakeOff1 extends PApplet {
 		for (int i = 0; i < 16; i++)// for all button
 			drawButton(i); // draw button
 
-		fill(255, 0, 0, 200); // set fill color to translucent red
-		ellipse(mouseX, mouseY, 20, 20); // draw user cursor as a circle with a diameter of 20
+		stroke(255); // set line color to white
+		strokeWeight(3);
+	    line(mouseX, mouseY - 10, mouseX, mouseY + 10); // Horizontal line for cursor
+	    line(mouseX - 10, mouseY, mouseX + 10, mouseY); // Horizontal line for cursor
 		
 		if(trialNum == 0) {
 			
@@ -137,6 +141,10 @@ public class BakeOff1 extends PApplet {
 
 	public void mousePressed() // test to see if hit was in target!
 	{
+		// setup for getting the exact center of window
+		canvas = (Component) surface.getNative();
+		position = canvas.getLocationOnScreen();
+		
 		if (trialNum >= trials.size()) // check if task is done
 			return;
 
@@ -167,11 +175,8 @@ public class BakeOff1 extends PApplet {
 
 		trialNum++; // Increment trial number
 
-		// in this example design, I move the cursor back to the middle after each click
-		// Note. When running from eclipse the robot class affects the whole screen not
-		// just the GUI, so the mouse may move outside of the GUI.
-		// robot.mouseMove(width/2, (height)/2); //on click, move cursor to roughly
-		// center of window!
+		// Set mouse position to center after each click
+		robot.mouseMove(position.x + width/2, position.y  + height/2);
 	}
 
 	// probably shouldn't have to edit this method
@@ -185,6 +190,7 @@ public class BakeOff1 extends PApplet {
 
 	// you can edit this method to change how buttons appear
 	public void drawButton(int i) {
+		strokeWeight(0);
 		Rectangle bounds = getButtonLocation(i);
 
 		if (trials.get(trialNum) == i) // see if current button is the target
