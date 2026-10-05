@@ -9,6 +9,7 @@ import java.util.Collections;
 import processing.core.PApplet;
 import java.awt.Component;
 import java.awt.Point;
+import java.awt.MouseInfo;
 
 public class BakeOff1 extends PApplet {
 	// when in doubt, consult the Processsing reference:
@@ -33,6 +34,10 @@ public class BakeOff1 extends PApplet {
 	Component canvas; // initialized in setup
 	Point position; // initialized in setup
 	boolean missed = false;
+	// separate cursor postion for drawing:
+	boolean pointerInitialized = false;
+	float cursorX = 350;
+	float cursorY = 350;
 
 	int numRepeats = 1; // sets the number of times each button repeats in the test
 
@@ -88,7 +93,9 @@ public class BakeOff1 extends PApplet {
 	public void draw() {
 		background(0); // set background to black
 		textSize(16);
-
+		
+		updateCursor();
+		
 		if (trialNum >= trials.size()) // check to see if test is over
 		{
 			float timeTaken = (finishTime - startTime) / 1000f;
@@ -114,10 +121,11 @@ public class BakeOff1 extends PApplet {
 		for (int i = 0; i < 16; i++)// for all button
 			drawButton(i); // draw button
 
+		// Crosshair for cursor:
 		stroke(255); // set line color to white
 		strokeWeight(3);
-	    line(mouseX, mouseY - 10, mouseX, mouseY + 10); // Horizontal line for cursor
-	    line(mouseX - 10, mouseY, mouseX + 10, mouseY); // Horizontal line for cursor
+	    line(cursorX, cursorY - 10, cursorX, cursorY + 10); // Horizontal line for cursor
+	    line(cursorX - 10, cursorY, cursorX + 10, cursorY); // Horizontal line for cursor
 		
 		if(trialNum == 0) {
 			
@@ -161,9 +169,9 @@ public class BakeOff1 extends PApplet {
 		Rectangle bounds = getButtonLocation(trials.get(trialNum));
 
 		// check to see if cursor was inside button
-		if ((mouseX > bounds.x && mouseX < bounds.x + bounds.width)
-				&& (mouseY > bounds.y && mouseY < bounds.y + bounds.height)) // test to see if hit was within bounds
-		{
+		// Changed to be cursor position rather than actual mouse position
+		if ((cursorX > bounds.x && cursorX < bounds.x + bounds.width)
+		        && (cursorY > bounds.y && cursorY < bounds.y + bounds.height)){
 			System.out.println("HIT! " + trialNum + " " + (millis() - startTime)); // success
 			missed = false;//print out hit on game
 			hits++;
@@ -174,9 +182,13 @@ public class BakeOff1 extends PApplet {
 		}
 
 		trialNum++; // Increment trial number
+		
+		// Print statement for position of cursor on click:
+		System.out.println("X: " + cursorX + " Y: " + cursorY);
 
 		// Set mouse position to center after each click
-		robot.mouseMove(position.x + width/2, position.y  + height/2);
+		cursorX = width / 2f;
+		cursorY = height / 2f;
 	}
 
 	// probably shouldn't have to edit this method
@@ -199,6 +211,65 @@ public class BakeOff1 extends PApplet {
 			fill(200); // if not, fill gray
 
 		rect(bounds.x, bounds.y, bounds.width, bounds.height);
+	}
+	
+	// Method to be called in drawing loop to check for border collisions
+	// Referenced the following:
+	//https://docs.oracle.com/en/java/javase/17/docs/api/java.desktop/java/awt/Point.html
+    //https://docs.oracle.com/en/java/javase/17/docs/api/java.desktop/java/awt/MouseInfo.html
+    //https://docs.oracle.com/en/java/javase/17/docs/api/java.desktop/java/awt/PointerInfo.html
+	public void updateCursor() {
+	    // Release the pointer when another window has focus or the test ends.
+	    if (!focused || trialNum >= trials.size() || robot == null) {
+	        pointerInitialized = false;
+	        return;
+	    }
+
+	    canvas = (Component) surface.getNative();
+
+	    if (!canvas.isShowing())
+	        return;
+
+	    position = canvas.getLocationOnScreen();
+	    
+	    // Center of the drawing area in screen coordinates.
+	    int centerX = position.x + width / 2;
+	    int centerY = position.y + height / 2;
+
+	    // Establish the starting position without moving the crosshair.
+	    if (!pointerInitialized) {
+	        robot.mouseMove(centerX, centerY);
+	        pointerInitialized = true;
+	        return;
+	    }
+	    
+	    Point pointer = MouseInfo.getPointerInfo().getLocation();
+
+	    float dx = pointer.x - centerX;
+	    float dy = pointer.y - centerY;
+
+	    float nextX = cursorX + dx;
+	    float nextY = cursorY + dy;
+
+	    float correctionX = 0;
+	    float correctionY = 0;
+
+	    if (nextX < 201) // Left Border
+	        correctionX = 201 - nextX;
+	    else if (nextX > 509) // Right border
+	        correctionX = 509 - nextX;
+
+	    if (nextY < 201) // Top border
+	        correctionY = 201 - nextY;
+	    else if (nextY > 509) // Bottom border
+	        correctionY = 509 - nextY;
+
+	    cursorX = nextX + correctionX;
+	    cursorY = nextY + correctionY;
+
+	    // Reset the actual pointer for the next movement measurement.
+	    if (dx != 0 || dy != 0)
+	        robot.mouseMove(centerX, centerY);
 	}
 
 	public void mouseMoved() {
