@@ -121,7 +121,7 @@ public class BakeOff1 extends PApplet {
 		for (int i = 0; i < 16; i++)// for all button
 			drawButton(i); // draw button
 
-		// Crosshair for cursor:
+		// Draw cross-hair for cursor:
 		stroke(255); // set line color to white
 		strokeWeight(3);
 	    line(cursorX, cursorY - 10, cursorX, cursorY + 10); // Horizontal line for cursor
@@ -184,7 +184,7 @@ public class BakeOff1 extends PApplet {
 		trialNum++; // Increment trial number
 		
 		// Print statement for position of cursor on click:
-		System.out.println("X: " + cursorX + " Y: " + cursorY);
+		// System.out.println("X: " + cursorX + " Y: " + cursorY);
 
 		// Set mouse position to center after each click
 		cursorX = width / 2f;
@@ -236,7 +236,7 @@ public class BakeOff1 extends PApplet {
 	    int centerX = position.x + width / 2;
 	    int centerY = position.y + height / 2;
 
-	    // Establish the starting position without moving the crosshair.
+	    // Establish the starting position without moving the cross-hair.
 	    if (!pointerInitialized) {
 	        robot.mouseMove(centerX, centerY);
 	        pointerInitialized = true;
