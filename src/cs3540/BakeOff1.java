@@ -75,7 +75,6 @@ public class BakeOff1 extends PApplet {
 				// number of times each button repeats
 				trials.add(i);
 		
-
 		buttonColors.add(Color.RED);
 		buttonColors.add(Color.BLUE);
 		buttonColors.add(Color.CYAN);
@@ -211,6 +210,14 @@ public class BakeOff1 extends PApplet {
 			fill(200); // if not, fill gray
 
 		rect(bounds.x, bounds.y, bounds.width, bounds.height);
+		
+		// Draw a red outline around the next button in the sequence
+        if (trialNum + 1 < trials.size() && trials.get(trialNum + 1) == i) {
+            noFill();
+            stroke(255, 0, 0);
+            strokeWeight(3);
+            rect(bounds.x, bounds.y, bounds.width, bounds.height);
+        }
 	}
 	
 	// Method to be called in drawing loop to check for border collisions
